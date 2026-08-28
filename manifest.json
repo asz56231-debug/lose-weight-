@@ -1,0 +1,17 @@
+{
+  "name": "水獺輕食日記",
+  "short_name": "水獺日記",
+  "description": "可愛的拍照計算熱量、減重計畫與飲食風格助手",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FDF6EC",
+  "theme_color": "#FF9FB8",
+  "orientation": "portrait",
+  "lang": "zh-Hant",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
