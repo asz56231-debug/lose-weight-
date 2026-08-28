@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<title>水獺輕食日記</title>
+<meta name="description" content="可愛的拍照計算熱量與減重計畫助手" />
+<meta name="theme-color" content="#FF9FB8" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="水獺日記" />
+<link rel="manifest" href="./manifest.json" />
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+<link rel="icon" href="./icons/icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #FDF6EC; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    color: #3B2A45;
+    min-height: 100vh;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #root { min-height: 100vh; }
+
+  .app-bg {
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 10px;
+    padding-top: max(24px, env(safe-area-inset-top));
+    padding-bottom: max(24px, env(safe-area-inset-bottom));
+    background:
+      radial-gradient(circle at 15% 20%, #FFE8EF 0%, transparent 45%),
+      radial-gradient(circle at 85% 15%, #E9E3FA 0%, transparent 40%),
+      radial-gradient(circle at 20% 85%, #DFF6EA 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, #FFF3D6 0%, transparent 40%),
+      #FDF6EC;
+  }
+
+  .phone {
+    position: relative;
+    width: 420px;
+    max-width: 100%;
+    min-height: 100vh;
+    background: #FFFDF9;
+    border-radius: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  @media (min-width: 460px) {
+    .phone {
+      width: 400px;
+      min-height: 800px;
+      height: 800px;
+      border-radius: 44px;
+      box-shadow: 0 30px 60px -20px rgba(59,42,69,0.35), 0 0 0 10px #ffffff, 0 0 0 12px #EADFCF;
+    }
+  }
+
+  .phone-screen { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  .loading-screen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: #A99BB5; font-size: 13px; font-weight: 700; }
+  .app-header { padding: 24px 20px 8px; flex-shrink: 0; }
+  .app-brand { font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 19px; color: #3B2A45; }
+  .scroll-area { flex: 1; overflow-y: auto; padding: 4px 20px 16px; -webkit-overflow-scrolling: touch; }
+  .scroll-area::-webkit-scrollbar { width: 0px; }
+  .tab-content { display: flex; flex-direction: column; gap: 14px; padding-top: 6px; padding-bottom: 20px; }
+
+  .card { background: #ffffff; border-radius: 24px; padding: 18px; box-shadow: 0 6px 18px -8px rgba(59,42,69,0.12); }
+  .section-head { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+  .section-head h3 { font-family: 'Baloo 2', sans-serif; font-size: 17px; margin: 0; }
+  .section-count { font-size: 11px; color: #8B7B99; }
+
+  .btn-primary { background: linear-gradient(135deg, #FF9FB8, #FF7FA0); color: #fff; border: none; padding: 13px 20px; border-radius: 18px; font-family: 'Baloo 2', sans-serif; font-weight: 600; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 8px 18px -6px rgba(255,127,160,0.55); }
+  .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+  .btn-secondary { background: #FBEFE2; color: #3B2A45; border: none; padding: 13px 20px; border-radius: 18px; font-family: 'Baloo 2', sans-serif; font-weight: 600; font-size: 15px; cursor: pointer; }
+  .btn-ghost { background: transparent; color: #8B7B99; border: 1.5px dashed #E3D6C8; padding: 11px 20px; border-radius: 18px; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; margin-top: 8px; }
+  .btn-full { width: 100%; margin-top: 16px; }
+  .btn-row { display: flex; gap: 10px; margin-top: 14px; }
+  .btn-row .btn-primary, .btn-row .btn-secondary { flex: 1; }
+
+  .form-screen { padding: 24px 20px 30px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; height: 100%; }
+  .form-hero { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px 0 4px; }
+  .form-title { font-family: 'Baloo 2', sans-serif; font-size: 20px; margin: 4px 0 0; }
+  .form-sub { font-size: 13px; color: #8B7B99; margin: 0; }
+
+  .field-label { font-size: 12.5px; font-weight: 700; color: #6B5A78; display: block; margin-bottom: 6px; }
+  .field-hint { font-size: 11px; color: #A99BB5; margin: -2px 0 12px; }
+  .field-row { display: flex; gap: 10px; margin-top: 14px; }
+  .field-col { flex: 1; min-width: 0; }
+
+  .input-wrap { position: relative; }
+  .input { width: 100%; border: 1.5px solid #F0E5D8; background: #FFFCF7; border-radius: 14px; padding: 11px 34px 11px 12px; font-size: 14px; font-family: 'Nunito', sans-serif; color: #3B2A45; outline: none; }
+  .input:focus { border-color: #FF9FB8; }
+  .input-full { padding-right: 12px; }
+  .input-unit { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 11px; color: #A99BB5; }
+
+  .segmented { display: flex; gap: 8px; margin-bottom: 4px; }
+  .seg-btn { flex: 1; padding: 10px; border-radius: 14px; border: 1.5px solid #F0E5D8; background: #FFFCF7; font-family: 'Baloo 2', sans-serif; font-weight: 600; font-size: 14px; color: #8B7B99; cursor: pointer; }
+  .seg-btn-active { background: #3B2A45; border-color: #3B2A45; color: #fff; }
+
+  .option-list { display: flex; flex-direction: column; gap: 8px; }
+  .option-row { display: flex; align-items: center; justify-content: space-between; border: 1.5px solid #F0E5D8; background: #FFFCF7; border-radius: 14px; padding: 10px 14px; cursor: pointer; text-align: left; }
+  .option-row-active { background: #8FE3B8; border-color: #6FD1A2; }
+  .option-title { display: block; font-weight: 700; font-size: 13.5px; }
+  .option-desc { display: block; font-size: 11px; color: #8B7B99; }
+  .option-row-active .option-desc { color: #29694A; }
+
+  .pace-grid { display: flex; gap: 8px; }
+  .pace-card { flex: 1; border: 1.5px solid #F0E5D8; background: #FFFCF7; border-radius: 14px; padding: 10px 8px; cursor: pointer; text-align: center; display: flex; flex-direction: column; gap: 2px; }
+  .pace-card-active { background: #FFE8EF; border-color: #FF9FB8; }
+  .pace-label { font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 13px; }
+  .pace-desc { font-size: 10px; color: #8B7B99; }
+
+  .home-header { display: flex; align-items: flex-start; justify-content: space-between; }
+  .home-date { font-size: 11.5px; color: #A99BB5; margin: 0 0 2px; }
+  .home-title { font-family: 'Baloo 2', sans-serif; font-size: 16.5px; margin: 0; max-width: 230px; line-height: 1.35; }
+  .home-streak-chip { display: inline-block; margin-top: 6px; background: #FFF3D6; color: #8A6A1F; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
+
+  .ring-card { display: flex; align-items: center; gap: 14px; }
+  .ring-wrap { position: relative; flex-shrink: 0; }
+  .ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .ring-number { font-family: 'Baloo 2', sans-serif; font-size: 26px; font-weight: 700; }
+  .ring-label { font-size: 10.5px; color: #A99BB5; }
+  .ring-side { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+
+  .stat-chip { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #FF7FA0; }
+  .speech-bubble { background: #FBEFE2; border-radius: 14px; padding: 9px 12px; font-size: 12px; line-height: 1.5; color: #6B5A78; }
+
+  .macro-row { display: flex; gap: 8px; }
+  .macro-pill { flex: 1; border-radius: 16px; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+  .macro-num { font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 15px; }
+  .macro-name { font-size: 10.5px; color: #6B5A78; }
+
+  .empty-card { border: 1.5px dashed #F0C9D6; background: #FFF7FA; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 13px; color: #A96A85; cursor: pointer; font-family: 'Nunito', sans-serif; font-weight: 700; width: 100%; }
+
+  .water-card { display: flex; flex-direction: column; gap: 10px; }
+  .water-head { display: flex; align-items: center; justify-content: space-between; }
+  .water-count { font-size: 12px; font-weight: 700; color: #7FC8E8; }
+  .water-cups { display: flex; flex-wrap: wrap; gap: 8px; }
+  .water-cup { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid #DCEFF7; background: #F4FBFE; font-size: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0.5; }
+  .water-cup-filled { background: #DFF3FB; border-color: #8FD3EE; opacity: 1; }
+
+  .weight-goal-row { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 10px; }
+  .weight-goal-stat { display: flex; flex-direction: column; align-items: center; }
+  .weight-goal-num { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 20px; }
+  .weight-goal-label { font-size: 10px; color: #8B7B99; }
+  .progress-bar-track { width: 100%; height: 10px; border-radius: 999px; background: #F0E5D8; overflow: hidden; }
+  .progress-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #FF9FB8, #FFD873); transition: width 0.5s ease; }
+
+  .playground-wrap { display: flex; flex-direction: column; gap: 10px; }
+  .playground { position: relative; width: 100%; height: 220px; border-radius: 22px; background: linear-gradient(180deg, #FFF7FA 0%, #FDF0E4 100%); border: 1.5px dashed #F0D9C9; overflow: hidden; }
+  .playground-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12.5px; color: #B79FAE; text-align: center; padding: 0 30px; }
+  .food-chip { position: absolute; top: 0; left: 0; width: 56px; height: 56px; border-radius: 50%; border: 3px solid #ffffff; box-shadow: 0 6px 14px -4px rgba(59,42,69,0.3); overflow: hidden; padding: 0; cursor: pointer; background: #FBEFE2; will-change: transform; }
+  .food-chip img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .food-chip-fallback { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 20px; }
+
+  .playground-actions { display: flex; gap: 8px; justify-content: center; }
+  .shake-btn { background: linear-gradient(135deg, #FFD873, #FFC24B); border: none; color: #6B4E13; font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 13px; padding: 9px 18px; border-radius: 999px; cursor: pointer; box-shadow: 0 6px 14px -6px rgba(255,196,75,0.7); }
+  .shake-btn-ghost { background: transparent; border: 1.5px dashed #E3D6C8; color: #A99BB5; font-size: 11px; padding: 9px 14px; border-radius: 999px; cursor: pointer; font-weight: 700; }
+
+  .detail-card { background: #fff; border-radius: 20px; padding: 16px; box-shadow: 0 6px 18px -8px rgba(59,42,69,0.15); }
+  .detail-top { display: flex; align-items: center; gap: 10px; }
+  .detail-thumb { width: 50px; height: 50px; border-radius: 14px; object-fit: cover; flex-shrink: 0; }
+  .detail-thumb-fallback { display: flex; align-items: center; justify-content: center; background: #FBEFE2; font-size: 20px; }
+  .detail-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+  .log-name { font-size: 13.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .log-meta { font-size: 10.5px; color: #A99BB5; }
+  .log-cal { font-size: 13px; font-weight: 700; color: #FF7FA0; flex-shrink: 0; }
+  .log-del { border: none; background: transparent; color: #C9B8CF; cursor: pointer; padding: 4px; flex-shrink: 0; }
+
+  .streak-card { display: flex; flex-direction: column; gap: 12px; }
+  .streak-top { display: flex; align-items: center; gap: 12px; }
+  .streak-top > div { display: flex; flex-direction: column; }
+  .streak-num { font-family: 'Baloo 2', sans-serif; font-size: 20px; font-weight: 800; }
+  .streak-sub { font-size: 11.5px; color: #8B7B99; }
+  .streak-strip { display: flex; gap: 5px; justify-content: space-between; }
+  .streak-dot { width: 14px; height: 14px; border-radius: 50%; background: #F0E5D8; flex-shrink: 0; }
+  .streak-dot-filled { background: linear-gradient(135deg, #FF9FB8, #FFD873); }
+  .streak-dot-today { box-shadow: 0 0 0 2px #3B2A45; }
+  .badge-row { background: #FFF3D6; color: #8A6A1F; font-size: 12px; font-weight: 700; padding: 8px 12px; border-radius: 12px; text-align: center; }
+
+  .weight-logger { display: flex; flex-direction: column; }
+  .weight-row { display: flex; gap: 10px; align-items: flex-start; }
+
+  .analysis-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+  .analysis-list li { font-size: 12.5px; line-height: 1.5; color: #3B2A45; }
+
+  .ai-result { margin-top: 14px; background: #F1F8F4; border-radius: 16px; padding: 12px 14px; }
+  .ai-badge { font-size: 11px; font-weight: 800; color: #29694A; margin-bottom: 6px; }
+  .ai-summary { font-size: 12.5px; line-height: 1.6; color: #29694A; margin: 0 0 8px; }
+
+  .history-list { display: flex; flex-direction: column; gap: 8px; }
+  .history-day { border-bottom: 1px solid #F5EEE3; padding-bottom: 8px; }
+  .history-day:last-child { border-bottom: none; }
+  .history-day-head { width: 100%; background: none; border: none; display: flex; align-items: center; gap: 8px; padding: 6px 2px; cursor: pointer; }
+  .history-date { font-size: 12.5px; font-weight: 700; width: 62px; text-align: left; flex-shrink: 0; }
+  .history-thumbs { flex: 1; display: flex; gap: 4px; overflow: hidden; }
+  .history-thumbs img, .history-thumb-fallback { width: 26px; height: 26px; border-radius: 8px; object-fit: cover; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #FBEFE2; font-size: 13px; }
+  .history-total { font-size: 12px; font-weight: 800; flex-shrink: 0; }
+  .history-good { color: #3FA872; }
+  .history-over { color: #FF7FA0; }
+  .history-under { color: #E8A64B; }
+  .history-chevron { flex-shrink: 0; transition: transform 0.2s ease; color: #C9B8CF; }
+  .history-chevron-open { transform: rotate(90deg); }
+  .history-day-body { padding: 4px 2px 6px 70px; display: flex; flex-direction: column; gap: 8px; }
+  .history-meal-block { display: flex; flex-direction: column; gap: 3px; }
+  .history-item-row { display: flex; align-items: center; gap: 6px; font-size: 12px; padding: 2px 0; }
+  .history-item-row .log-name { flex: 1; font-weight: 600; font-size: 12px; }
+
+  .quick-add-wrap { width: 100%; margin-top: 6px; }
+  .quick-food-chip { flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; background: #FFFCF7; border: 1.5px solid #F0E5D8; border-radius: 16px; padding: 8px 14px; cursor: pointer; }
+  .quick-food-chip span:first-child { font-size: 12px; font-weight: 700; color: #3B2A45; }
+  .quick-food-cal { font-size: 10px; color: #A99BB5; }
+
+  .camera-empty { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 40px 20px 20px; text-align: center; }
+  .camera-empty-text { font-size: 13.5px; color: #6B5A78; max-width: 230px; line-height: 1.5; }
+  .preview-img { width: 100%; border-radius: 16px; max-height: 220px; object-fit: cover; }
+  .analyzing-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 13px; color: #8B7B99; font-weight: 700; }
+  .spin { animation: spin 1s linear infinite; color: #FF9FB8; }
+  @keyframes spin { from { transform: rotate(0deg);} to { transform: rotate(360deg);} }
+
+  .info-banner { display: flex; align-items: center; gap: 8px; margin-top: 12px; background: #FFF3D6; color: #8A6A1F; border-radius: 14px; padding: 10px 12px; font-size: 12px; font-weight: 700; }
+  .info-banner-care { background: #E9E3FA; color: #5B4A87; margin-top: 4px; }
+
+  .result-box { margin-top: 12px; }
+  .result-row { display: flex; align-items: center; justify-content: space-between; }
+  .result-name { font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 16px; }
+  .result-cal { font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 16px; color: #FF7FA0; }
+  .result-portion { font-size: 11.5px; color: #A99BB5; margin: 4px 0 0; }
+
+  .plan-summary { display: flex; gap: 8px; }
+  .plan-stat { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; border-radius: 16px; }
+  .plan-stat-highlight { background: #FFE8EF; }
+  .plan-stat-num { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 18px; }
+  .plan-stat-label { font-size: 10px; color: #8B7B99; text-align: center; }
+
+  .plan-sub-title { font-family: 'Baloo 2', sans-serif; font-size: 14.5px; margin: 0 0 10px; }
+  .meal-block { margin-bottom: 12px; }
+  .meal-block:last-child { margin-bottom: 0; }
+  .meal-tag { display: inline-block; background: #8FE3B8; color: #1F5E3D; font-weight: 700; font-size: 11px; padding: 3px 10px; border-radius: 999px; margin-bottom: 6px; }
+  .meal-row { display: flex; justify-content: space-between; font-size: 12.5px; padding: 4px 2px; }
+  .meal-name { color: #3B2A45; }
+  .meal-cal { color: #A99BB5; flex-shrink: 0; margin-left: 8px; }
+
+  .tip-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; padding: 6px 0; }
+
+  .diet-scroll { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 6px; }
+  .diet-scroll::-webkit-scrollbar { height: 0; }
+  .diet-chip { flex-shrink: 0; display: flex; align-items: center; gap: 6px; background: #FFFCF7; border: 1.5px solid #F0E5D8; border-radius: 999px; padding: 8px 14px; font-size: 12.5px; font-weight: 700; color: #6B5A78; cursor: pointer; white-space: nowrap; }
+  .diet-chip-active { background: #3B2A45; border-color: #3B2A45; color: #fff; }
+  .diet-emoji { font-size: 14px; }
+  .diet-emoji-lg { font-size: 30px; line-height: 1; }
+
+  .diet-detail-card { display: flex; flex-direction: column; gap: 8px; }
+  .diet-detail-head { display: flex; align-items: center; gap: 12px; }
+  .diet-tagline { font-size: 11.5px; color: #A99BB5; }
+  .diet-detail-text { font-size: 12.5px; line-height: 1.6; color: #6B5A78; margin: 4px 0 0; }
+
+  .disclaimer { font-size: 10.5px; color: #B5A9BE; line-height: 1.6; text-align: center; padding: 0 6px; }
+
+  .profile-card { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .profile-rows { width: 100%; display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
+  .profile-row { display: flex; justify-content: space-between; font-size: 13px; padding: 8px 2px; border-bottom: 1px solid #F5EEE3; }
+  .profile-row:last-child { border-bottom: none; }
+  .profile-row span:first-child { color: #8B7B99; }
+  .profile-row span:last-child { font-weight: 700; }
+
+  .tabbar { flex-shrink: 0; display: flex; align-items: center; justify-content: space-around; padding: 10px 8px 18px; padding-bottom: max(18px, env(safe-area-inset-bottom)); background: #FFFDF9; border-top: 1px solid #F5EEE3; }
+  .tab-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 9.5px; color: #C9B8CF; cursor: pointer; font-family: 'Nunito', sans-serif; font-weight: 700; padding: 4px 6px; }
+  .tab-btn-active { color: #FF7FA0; }
+  .tab-btn-camera { position: relative; top: -18px; }
+  .camera-fab { width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #FF9FB8, #FF7FA0); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 20px -6px rgba(255,127,160,0.6); border: 4px solid #FFFDF9; }
+
+  .mascot-svg { flex-shrink: 0; }
+  .backend-note { font-size: 10px; color: #C9B8CF; text-align: center; padding: 0 10px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  window.addEventListener("error", function (e) {
+    var root = document.getElementById("root");
+    if (root && !root.hasChildNodes()) {
+      root.innerHTML =
+        '<div style="max-width:380px;margin:60px auto;padding:20px;font-family:sans-serif;font-size:14px;line-height:1.6;color:#3B2A45;background:#FFF3D6;border-radius:16px;">' +
+        '\u26a0\ufe0f \u8f09\u5165\u6642\u767c\u751f\u932f\u8aa4\uff1a<br><br>' +
+        String((e && (e.message || (e.error && e.error.message))) || "unknown error") +
+        '</div>';
+    }
+  });
+  setTimeout(function () {
+    var root = document.getElementById("root");
+    if (root && !root.hasChildNodes()) {
+      root.innerHTML =
+        '<div style="max-width:380px;margin:60px auto;padding:20px;font-family:sans-serif;font-size:14px;line-height:1.6;color:#3B2A45;background:#FFF3D6;border-radius:16px;">' +
+        '\u26a0\ufe0f \u61c9\u7528\u7a0b\u5f0f\u6c92\u6709\u6210\u529f\u8f09\u5165\uff0c\u53ef\u80fd\u662f\u7db2\u8def\u8f03\u6162\u6216\u6709\u8cc7\u6e90\u88ab\u64cb\u4e0b\uff0c\u8acb\u6aa2\u67e5\u7db2\u8def\u9023\u7dda\u5f8c\u91cd\u65b0\u6574\u7406\u3002' +
+        '</div>';
+    }
+  }, 6000);
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js" crossorigin></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.28.4/babel.min.js" crossorigin></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useRef, useMemo, useEffect } = React;
+
+/* ============ CONFIG ============
+   Set this to your own backend endpoint if you deploy the example
+   serverless function in /api/gemini.js or netlify/functions/gemini.js
+   (see README.md). It proxies Google's Gemini API, which has a genuine
+   free tier (no credit card). Until you deploy it, photo AI-analysis
+   will fail gracefully and fall back to manual entry. */
+const API_ENDPOINT = "/api/gemini";
+
+/* ============ constants (same as prototype) ============ */
+const ACTIVITY = [
+  { key: "sedentary", label: "久坐少動", desc: "幾乎不運動、整天坐著", factor: 1.2 },
+  { key: "light", label: "輕量活動", desc: "每週運動 1–3 天", factor: 1.375 },
+  { key: "moderate", label: "中度活動", desc: "每週運動 3–5 天", factor: 1.55 },
+  { key: "active", label: "高度活動", desc: "每週運動 6–7 天", factor: 1.725 },
+  { key: "veryActive", label: "非常活躍", desc: "體力勞動或每天訓練", factor: 1.9 },
+];
+const PACE = [
+  { key: "gentle", label: "溫和", kg: 0.25, desc: "每週約 -0.25kg，最輕鬆" },
+  { key: "standard", label: "標準", kg: 0.5, desc: "每週約 -0.5kg，推薦步調" },
+  { key: "aggressive", label: "積極", kg: 0.75, desc: "每週約 -0.75kg，需要自律" },
+];
+const DIET_STYLES = [
+  { key: "balanced", name: "均衡飲食", emoji: "🍚", tagline: "各類食物均衡分配，最好入門",
+    detail: "蛋白質、原型澱粉、蔬菜均衡搭配，適合大多數人長期維持，不需要特別忌口。",
+    meals: { 早餐:[{name:"地瓜 + 水煮蛋 + 無糖豆漿",cal:320},{name:"全麥吐司 + 花生醬 + 香蕉",cal:380},{name:"燕麥粥 + 藍莓 + 堅果",cal:350}],
+      午餐:[{name:"雞胸肉便當（半糙米＋燙青菜）",cal:550},{name:"鮭魚糙米飯 + 味噌湯",cal:600},{name:"牛肉河粉（少湯多料）",cal:580}],
+      晚餐:[{name:"烤魚 + 地瓜 + 炒時蔬",cal:480},{name:"雞胸沙拉 + 藜麥",cal:420},{name:"滷雞腿（去皮）+ 燙青菜",cal:470}],
+      點心:[{name:"無糖優格 + 堅果",cal:150},{name:"蘋果一顆",cal:95},{name:"毛豆一小碗",cal:120}] } },
+  { key: "mediterranean", name: "地中海飲食", emoji: "🫒", tagline: "橄欖油、魚類、全穀為主",
+    detail: "多蔬菜、豆類、堅果、魚類與橄欖油，少紅肉與精緻糖，長期實行對心血管健康有幫助。",
+    meals: { 早餐:[{name:"希臘優格 + 蜂蜜 + 核桃",cal:340},{name:"全麥麵包 + 酪梨 + 番茄",cal:360},{name:"水煮蛋 + 橄欖 + 小黃瓜",cal:300}],
+      午餐:[{name:"鷹嘴豆沙拉 + 橄欖油醋",cal:480},{name:"烤鯖魚 + 全麥couscous + 蔬菜",cal:560},{name:"番茄燉魚 + 糙米",cal:540}],
+      晚餐:[{name:"烤鮭魚 + 蒸時蔬 + 橄欖油",cal:460},{name:"地中海蔬菜燉豆 + 全麥麵包",cal:430},{name:"章魚沙拉 + 藜麥",cal:450}],
+      點心:[{name:"杏仁一小把",cal:160},{name:"橄欖 + 起司片",cal:140},{name:"新鮮無花果 2 顆",cal:100}] } },
+  { key: "lowcarb", name: "低碳飲食", emoji: "🥩", tagline: "減少精緻澱粉，增加蛋白質與蔬菜",
+    detail: "把碳水抓在總熱量三成以下，適合想較快看到體重變化的人；糖尿病或服藥控制血糖者請先諮詢醫師再調整。",
+    meals: { 早餐:[{name:"炒蛋 + 酪梨 + 培根",cal:380},{name:"無糖希臘優格 + 奇亞籽",cal:260},{name:"起司蛋捲 + 小番茄",cal:340}],
+      午餐:[{name:"雞胸沙拉（少醬）+ 堅果",cal:480},{name:"牛排 + 炒時蔬（不配飯）",cal:560},{name:"鮭魚酪梨沙拉",cal:520}],
+      晚餐:[{name:"香煎豬里肌 + 花椰菜飯",cal:460},{name:"蒜香蝦仁 + 櫛瓜麵",cal:420},{name:"雞腿排 + 大量蔬菜",cal:470}],
+      點心:[{name:"起司條一份",cal:110},{name:"水煮蛋一顆",cal:78},{name:"小黃瓜 + 花生醬",cal:130}] } },
+  { key: "highprotein", name: "高蛋白飲食", emoji: "🍗", tagline: "減脂同時保留肌肉量",
+    detail: "把蛋白質拉高到總熱量約三分之一，搭配阻力訓練效果更好，適合有在健身或重訓的人。",
+    meals: { 早餐:[{name:"希臘優格 + 乳清蛋白 + 香蕉",cal:380},{name:"三顆蛋白 + 全蛋 + 燕麥",cal:400},{name:"雞胸肉蛋餅",cal:420}],
+      午餐:[{name:"雞胸肉 200g + 糙米 + 蔬菜",cal:600},{name:"鮪魚沙拉 + 藜麥",cal:540},{name:"牛肉丼（瘦肉）+ 半碗飯",cal:580}],
+      晚餐:[{name:"鯛魚排 + 地瓜 + 花椰菜",cal:470},{name:"雞胸肉炒蛋 + 蔬菜",cal:450},{name:"豆腐雞肉鍋",cal:440}],
+      點心:[{name:"乳清蛋白飲",cal:130},{name:"茶葉蛋 2 顆",cal:160},{name:"毛豆一碗",cal:150}] } },
+  { key: "intermittent", name: "168 間歇性斷食", emoji: "⏰", tagline: "8 小時進食、16 小時空腹",
+    detail: "把每天的餐點集中在 8 小時內吃完（例如中午到晚上 8 點），其餘時間只喝水。並非人人適合，孕哺乳者、糖尿病、低血糖或曾有飲食失調經驗者請避免，或先諮詢醫師。",
+    meals: { 早餐:[{name:"（空腹時段）黑咖啡或無糖茶",cal:5},{name:"（空腹時段）氣泡水",cal:0}],
+      午餐:[{name:"第一餐：雞胸肉飯 + 蔬菜",cal:650},{name:"第一餐：鮭魚酪梨碗",cal:620},{name:"第一餐：牛肉河粉",cal:600}],
+      晚餐:[{name:"第二餐：烤魚 + 地瓜 + 蔬菜",cal:550},{name:"第二餐：雞腿排沙拉",cal:500},{name:"第二餐：豆腐蔬菜鍋",cal:480}],
+      點心:[{name:"（進食窗口內）無糖優格",cal:120},{name:"（進食窗口內）堅果一小把",cal:160}] } },
+  { key: "plantforward", name: "彈性蔬食", emoji: "🌱", tagline: "以植物性蛋白為主，彈性搭配",
+    detail: "用豆腐、豆類、全穀取代部分肉類，增加膳食纖維攝取，仍保有彈性、偶爾吃肉也沒關係。",
+    meals: { 早餐:[{name:"豆漿燕麥粥 + 堅果",cal:340},{name:"全麥吐司 + 花生醬 + 香蕉",cal:380},{name:"豆腐蔬菜蛋餅",cal:360}],
+      午餐:[{name:"豆腐蔬菜咖哩飯",cal:540},{name:"藜麥鷹嘴豆沙拉",cal:500},{name:"皮蛋豆腐 + 糙米飯",cal:520}],
+      晚餐:[{name:"番茄豆腐鍋 + 少量麵線",cal:450},{name:"菇菇豆包炒時蔬 + 糙米",cal:470},{name:"扁豆蔬菜湯 + 全麥麵包",cal:430}],
+      點心:[{name:"毛豆一小碗",cal:120},{name:"無糖豆漿",cal:90},{name:"水果一份",cal:90}] } },
+];
+const RANGE_OPTIONS = [ {key:"day",label:"日"}, {key:"week",label:"週"}, {key:"month",label:"月"}, {key:"quarter",label:"季"}, {key:"year",label:"年"} ];
+const MEAL_TYPES = ["早餐","午餐","點心","晚餐"];
+const STREAK_MILESTONES = [3,7,14,30,60,100];
+const SIZE = 56;
+
+function pick(arr, n) {
+  const copy = [...arr]; const out = [];
+  for (let i=0;i<n && copy.length;i++) out.push(copy.splice(Math.floor(Math.random()*copy.length),1)[0]);
+  return out;
+}
+
+/* ============ date helpers ============ */
+function toDateKey(d){ const y=d.getFullYear(); const m=String(d.getMonth()+1).padStart(2,"0"); const day=String(d.getDate()).padStart(2,"0"); return `${y}-${m}-${day}`; }
+function todayKey(){ return toDateKey(new Date()); }
+function addDays(d,n){ const r=new Date(d); r.setDate(r.getDate()+n); return r; }
+function autoMealType(d=new Date()){ const h=d.getHours(); if(h<10) return "早餐"; if(h<14) return "午餐"; if(h<17) return "點心"; if(h<21) return "晚餐"; return "點心"; }
+
+/* ============ storage (localStorage, real deployment) ============ */
+function lsGet(key){ try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch(e){ return null; } }
+function lsSet(key, value){ try { localStorage.setItem(key, JSON.stringify(value)); } catch(e){} }
+
+/* ============ streak / analytics helpers ============ */
+function computeStreakInfo(logs){
+  const dates = new Set(logs.map(l=>l.date));
+  const today = todayKey();
+  let cursor = new Date();
+  if(!dates.has(today)) cursor = addDays(cursor,-1);
+  let streak = 0;
+  while (dates.has(toDateKey(cursor))) { streak++; cursor = addDays(cursor,-1); }
+  const sorted = Array.from(dates).sort();
+  let longest=0, run=0, prev=null;
+  sorted.forEach(ds=>{ if(prev){ const diff=(new Date(ds)-new Date(prev))/86400000; run = diff===1?run+1:1; } else run=1; longest=Math.max(longest,run); prev=ds; });
+  return { streak, longest, loggedToday: dates.has(today) };
+}
+function currentBadge(streak){ let b=null; STREAK_MILESTONES.forEach(m=>{ if(streak>=m) b=m; }); return b; }
+function nextMilestone(streak){ return STREAK_MILESTONES.find(m=>m>streak) || null; }
+
+function computeFrequentFoods(logs, limit=5){
+  const map = {};
+  logs.forEach(l=>{ if(!l.foodName) return; if(!map[l.foodName]) map[l.foodName]={name:l.foodName,count:0,totalCal:0}; map[l.foodName].count++; map[l.foodName].totalCal += Number(l.calories||0); });
+  return Object.values(map).map(f=>({name:f.name,count:f.count,avgCal:Math.round(f.totalCal/f.count)})).sort((a,b)=>b.count-a.count).slice(0,limit);
+}
+function waterTargetCups(weight){ return Math.max(6, Math.round((weight*33)/250)); }
+
+function groupLogsByDay(logs){
+  const map = {};
+  logs.forEach(l=>{ if(!map[l.date]) map[l.date]=[]; map[l.date].push(l); });
+  return Object.keys(map).sort((a,b)=>b.localeCompare(a)).map(date=>({
+    date, items: map[date].slice().sort((a,b)=>(a.time||"").localeCompare(b.time||"")),
+    total: map[date].reduce((s,l)=>s+Number(l.calories||0),0),
+  }));
+}
+
+function buildBuckets(rangeType){
+  const now = new Date(); const buckets = [];
+  if (rangeType==="day"){ for(let i=6;i>=0;i--){ const d=addDays(now,-i); const key=toDateKey(d); buckets.push({label:`${d.getMonth()+1}/${d.getDate()}`,start:key,end:key}); } }
+  else if (rangeType==="week"){ for(let i=7;i>=0;i--){ const end=addDays(now,-7*i); const start=addDays(end,-6); buckets.push({label:`${start.getMonth()+1}/${start.getDate()}`,start:toDateKey(start),end:toDateKey(end)}); } }
+  else if (rangeType==="month"){ for(let i=5;i>=0;i--){ const d=new Date(now.getFullYear(),now.getMonth()-i,1); const endD=new Date(d.getFullYear(),d.getMonth()+1,0); buckets.push({label:`${d.getMonth()+1}月`,start:toDateKey(d),end:toDateKey(endD)}); } }
+  else if (rangeType==="quarter"){ for(let i=3;i>=0;i--){ const qIndex=Math.floor(now.getMonth()/3)-i; const year=now.getFullYear()+Math.floor(qIndex/4); const q=((qIndex%4)+4)%4; const startD=new Date(year,q*3,1); const endD=new Date(year,q*3+3,0); buckets.push({label:`${year}/Q${q+1}`,start:toDateKey(startD),end:toDateKey(endD)}); } }
+  else if (rangeType==="year"){ for(let i=2;i>=0;i--){ const year=now.getFullYear()-i; const startD=new Date(year,0,1); const endD=new Date(year,11,31); buckets.push({label:`${year}`,start:toDateKey(startD),end:toDateKey(endD)}); } }
+  return buckets;
+}
+function computeBucketStats(bucket, logs, weightLogs){
+  const logsInRange = logs.filter(l=>l.date>=bucket.start && l.date<=bucket.end);
+  const dayTotals = {};
+  logsInRange.forEach(l=>{ dayTotals[l.date]=(dayTotals[l.date]||0)+Number(l.calories||0); });
+  const daysLogged = Object.keys(dayTotals).length;
+  const avgCalories = daysLogged ? Math.round(Object.values(dayTotals).reduce((a,b)=>a+b,0)/daysLogged) : 0;
+  const weightsInRange = weightLogs.filter(w=>w.date>=bucket.start && w.date<=bucket.end).sort((a,b)=>a.date.localeCompare(b.date));
+  const weightChange = weightsInRange.length>=2 ? Number((weightsInRange[weightsInRange.length-1].weight - weightsInRange[0].weight).toFixed(1)) : null;
+  return { ...bucket, avgCalories, daysLogged, weightChange };
+}
+function buildAnalysis(overall, totalDaysInPeriod, plan, streakInfo){
+  const lines = [];
+  if (overall.daysLogged===0){ lines.push("這段期間還沒有紀錄，先從今天拍一餐開始吧！"); lines.push(`目前連續紀錄 ${streakInfo.streak} 天，最長紀錄是 ${streakInfo.longest} 天。`); return lines; }
+  const loggedRatio = totalDaysInPeriod ? overall.daysLogged/totalDaysInPeriod : 0;
+  if (loggedRatio<0.5) lines.push(`這段期間只記錄了 ${overall.daysLogged} 天，養成每天拍照的習慣會讓分析更準確。`);
+  if (plan){
+    const diffPct = (overall.avgCalories-plan.goalCalories)/plan.goalCalories;
+    if (diffPct>0.1) lines.push(`平均每天攝取比目標多了約 ${Math.round(overall.avgCalories-plan.goalCalories)} 大卡，留意宵夜或含糖飲料的份量。`);
+    else if (diffPct<-0.15) lines.push("平均攝取比目標低不少，長期過低可能影響代謝與情緒，記得吃夠蛋白質與蔬菜。");
+    else lines.push("平均攝取熱量跟目標蠻接近的，抓得很不錯！");
+  }
+  if (overall.weightChange!==null){
+    if (overall.weightChange<-0.1) lines.push(`體重下降了約 ${Math.abs(overall.weightChange)} kg，繼續保持這個步調。`);
+    else if (overall.weightChange>0.3) lines.push("體重略為上升，別太緊張，先觀察兩週趨勢，也可能是水分或荷爾蒙影響。");
+    else lines.push("體重變化不大，這是正常的，體重本來就會有小幅波動。");
+  } else lines.push("目前體重紀錄還不夠，多記錄幾次可以看到更完整的趨勢。");
+  lines.push(`目前連續紀錄 ${streakInfo.streak} 天，最長紀錄是 ${streakInfo.longest} 天。`);
+  return lines;
+}
+
+async function callGemini(payload){
+  const response = await fetch(API_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) throw new Error("backend not configured");
+  const data = await response.json();
+  const text = (data && data.content && data.content.map(b=>b.text||"").join("")) || "";
+  const cleaned = text.replace(/```json|```/g, "").trim();
+  const match = cleaned.match(/\{[\s\S]*\}/);
+  return JSON.parse(match ? match[0] : cleaned);
+}
+
+/* ============ tiny inline icon set (no external deps) ============ */
+function Icon({ children, size=18, color="currentColor", style, className }) {
+  return React.createElement("svg",{width:size,height:size,viewBox:"0 0 24 24",fill:"none",stroke:color,strokeWidth:2,strokeLinecap:"round",strokeLinejoin:"round",style,className},children);
+}
+const IconHome = (p) => <Icon {...p}><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></Icon>;
+const IconCamera = (p) => <Icon {...p}><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13.5" r="3.5"/></Icon>;
+const IconChartBar = (p) => <Icon {...p}><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></Icon>;
+const IconTrend = (p) => <Icon {...p}><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></Icon>;
+const IconUser = (p) => <Icon {...p}><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></Icon>;
+const IconPlus = (p) => <Icon {...p}><path d="M12 5v14"/><path d="M5 12h14"/></Icon>;
+const IconCheck = (p) => <Icon {...p}><path d="M20 6L9 17l-5-5"/></Icon>;
+const IconTrash = (p) => <Icon {...p}><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></Icon>;
+const IconInfo = (p) => <Icon {...p}><circle cx="12" cy="12" r="9"/><path d="M12 16v-6"/><path d="M12 8h.01"/></Icon>;
+const IconRotate = (p) => <Icon {...p}><path d="M3 12a9 9 0 1 1 3 6.7"/><path d="M3 17v-5h5"/></Icon>;
+const IconDroplet = (p) => <Icon {...p}><path d="M12 2s7 8.5 7 13a7 7 0 1 1-14 0c0-4.5 7-13 7-13z"/></Icon>;
+const IconFlame = (p) => <Icon {...p}><path d="M12 2c1.8 3.6-1.8 5-1.8 8.6a3.8 3.8 0 0 0 7.6 0c0-1-.4-1.9-1-2.7 1.8 1 3.2 3 3.2 5.1a7 7 0 1 1-14 0c0-4.8 4-7 6-11z"/></Icon>;
+const IconSparkles = (p) => <Icon {...p}><path d="M12 2l1.6 4.7L18 8l-4.4 1.3L12 14l-1.6-4.7L6 8l4.4-1.3L12 2z"/><path d="M19 15l.6 1.9L21 17l-1.4.6L19 20l-.6-2.4L17 17l1.4-.6z"/></Icon>;
+const IconChevronRight = (p) => <Icon {...p}><path d="M9 6l6 6-6 6"/></Icon>;
+const IconLoader = (p) => <Icon {...p} className="spin"><path d="M12 3v3"/><path d="M12 18v3"/><path d="M5 5l2 2"/><path d="M17 17l2 2"/><path d="M3 12h3"/><path d="M18 12h3"/><path d="M5 19l2-2"/><path d="M17 7l2-2"/></Icon>;
+
+/* ============ Mascot: a round, fluffy otter ============ */
+function Mascot({ mood="happy", size=84, className="" }) {
+  const eyes = {
+    happy: (<><path d="M32 44 Q35 40 38 44" stroke="#3B2A45" strokeWidth="3" strokeLinecap="round" fill="none"/><path d="M58 44 Q61 40 64 44" stroke="#3B2A45" strokeWidth="3" strokeLinecap="round" fill="none"/></>),
+    cheer: (<><circle cx="35" cy="43" r="3.4" fill="#3B2A45"/><circle cx="61" cy="43" r="3.4" fill="#3B2A45"/></>),
+    shy: (<><path d="M31 43 Q35 47 39 43" stroke="#3B2A45" strokeWidth="3" strokeLinecap="round" fill="none"/><path d="M57 43 Q61 47 65 43" stroke="#3B2A45" strokeWidth="3" strokeLinecap="round" fill="none"/></>),
+    sleepy: (<><path d="M31 44 L39 44" stroke="#3B2A45" strokeWidth="3" strokeLinecap="round"/><path d="M57 44 L65 44" stroke="#3B2A45" strokeWidth="3" strokeLinecap="round"/></>),
+    caring: (<><path d="M32 44 Q35 41 38 44" stroke="#3B2A45" strokeWidth="3" strokeLinecap="round" fill="none"/><path d="M58 44 Q61 41 64 44" stroke="#3B2A45" strokeWidth="3" strokeLinecap="round" fill="none"/></>),
+  };
+  const mouth = mood==="cheer" ? (<path d="M38 60 Q48 70 58 60" stroke="#3B2A45" strokeWidth="3" strokeLinecap="round" fill="none"/>) :
+    mood==="sleepy" ? (<ellipse cx="48" cy="61" rx="4" ry="3" fill="#3B2A45"/>) :
+    (<path d="M40 60 Q48 66 56 60" stroke="#3B2A45" strokeWidth="3" strokeLinecap="round" fill="none"/>);
+  return (
+    <svg width={size} height={size} viewBox="0 0 96 96" className={`mascot-svg ${className}`}>
+      <circle cx="24" cy="27" r="10" fill="#CB9A6C" stroke="#A9754A" strokeWidth="2"/>
+      <circle cx="72" cy="27" r="10" fill="#CB9A6C" stroke="#A9754A" strokeWidth="2"/>
+      <circle cx="24" cy="27" r="4.5" fill="#F3D9B8"/>
+      <circle cx="72" cy="27" r="4.5" fill="#F3D9B8"/>
+      <ellipse cx="48" cy="55" rx="38" ry="33" fill="#D9AE7E" stroke="#A9754A" strokeWidth="2.5"/>
+      <ellipse cx="48" cy="64" rx="22" ry="17" fill="#FBEAD2"/>
+      <circle cx="27" cy="63" r="5.2" fill="#FFB3C6" opacity="0.6"/>
+      <circle cx="69" cy="63" r="5.2" fill="#FFB3C6" opacity="0.6"/>
+      <path d="M28 65 L12 62" stroke="#C9A578" strokeWidth="1.6" strokeLinecap="round"/>
+      <path d="M28 70 L12 71" stroke="#C9A578" strokeWidth="1.6" strokeLinecap="round"/>
+      <path d="M68 65 L84 62" stroke="#C9A578" strokeWidth="1.6" strokeLinecap="round"/>
+      <path d="M68 70 L84 71" stroke="#C9A578" strokeWidth="1.6" strokeLinecap="round"/>
+      <ellipse cx="48" cy="57" rx="4.2" ry="3.2" fill="#4A3226"/>
+      {eyes[mood] || eyes.happy}
+      {mouth}
+    </svg>
+  );
+}
+
+function ProgressRing({ percent, size=168, stroke=16 }) {
+  const r=(size-stroke)/2; const c=2*Math.PI*r; const offset=c-(Math.min(percent,100)/100)*c;
+  return (
+    <svg width={size} height={size}>
+      <defs><linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#FF8FAB"/><stop offset="100%" stopColor="#FFD873"/></linearGradient></defs>
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#FBEFE2" strokeWidth={stroke}/>
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="url(#ringGrad)" strokeWidth={stroke} strokeLinecap="round"
+        strokeDasharray={c} strokeDashoffset={offset} transform={`rotate(-90 ${size/2} ${size/2})`} style={{transition:"stroke-dashoffset 0.7s ease"}}/>
+    </svg>
+  );
+}
+
+function StreakStrip({ logs }) {
+  const dates = new Set(logs.map(l=>l.date));
+  const days = [];
+  for (let i=13;i>=0;i--){ const d=addDays(new Date(),-i); days.push({key:toDateKey(d), isToday: i===0}); }
+  return (
+    <div className="streak-strip">
+      {days.map(d => <div key={d.key} className={`streak-dot ${dates.has(d.key)?"streak-dot-filled":""} ${d.isToday?"streak-dot-today":""}`}/>)}
+    </div>
+  );
+}
+
+/* ============ lightweight charts (no external chart library) ============ */
+function SimpleBarChart({ data, goal, height=150 }) {
+  const width = 300;
+  const maxVal = Math.max(goal, ...data.map(d=>d.avgCalories), 1) * 1.15;
+  const gap = width / data.length;
+  const barW = gap * 0.5;
+  const goalY = height - (goal/maxVal)*height;
+  return (
+    <svg viewBox={`0 0 ${width} ${height+22}`} width="100%" height={height+22} preserveAspectRatio="xMidYMid meet">
+      <line x1="0" y1={goalY} x2={width} y2={goalY} stroke="#FF9FB8" strokeDasharray="4 4" strokeWidth="1.5"/>
+      {data.map((d,i)=>{
+        const h = Math.max(2,(d.avgCalories/maxVal)*height);
+        const x = i*gap + (gap-barW)/2;
+        const y = height - h;
+        return (
+          <g key={i}>
+            <rect x={x} y={y} width={barW} height={h} rx={6} fill="#8FE3B8"/>
+            <text x={x+barW/2} y={height+15} fontSize="8" fill="#A99BB5" textAnchor="middle">{d.name}</text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+function SimpleLineChart({ data, height=130 }) {
+  const width = 300;
+  if (data.length < 2) return null;
+  const values = data.map(d=>d.weight);
+  const min = Math.min(...values)-1, max = Math.max(...values)+1;
+  const stepX = width/(data.length-1);
+  const pts = data.map((d,i)=>{ const x=i*stepX; const y=height-((d.weight-min)/(max-min))*height; return [x,y]; });
+  const pathD = pts.map((p,i)=>(i===0?"M":"L")+p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");
+  return (
+    <svg viewBox={`0 0 ${width} ${height+18}`} width="100%" height={height+18} preserveAspectRatio="xMidYMid meet">
+      <path d={pathD} fill="none" stroke="#FF8FAB" strokeWidth="2.5"/>
+      {pts.map((p,i)=><circle key={i} cx={p[0]} cy={p[1]} r="3" fill="#FF8FAB"/>)}
+      {data.map((d,i)=><text key={i} x={i*stepX} y={height+13} fontSize="7" fill="#A99BB5" textAnchor="middle">{d.name}</text>)}
+    </svg>
+  );
+}
+
+/* ============ Water tracker ============ */
+function WaterTracker({ cups, target, onChange }) {
+  return (
+    <div className="card water-card">
+      <div className="water-head"><h4 className="plan-sub-title" style={{margin:0}}>今日喝水</h4><span className="water-count">{cups} / {target} 杯</span></div>
+      <div className="water-cups">
+        {Array.from({length:target}).map((_,i)=>(
+          <button key={i} type="button" className={`water-cup ${i<cups?"water-cup-filled":""}`} onClick={()=>onChange(i<cups?i:i+1)}>💧</button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ============ Weight goal progress ============ */
+function WeightGoalCard({ profile, weightLogs }) {
+  const startWeight = weightLogs.length ? weightLogs[0].weight : profile.weight;
+  const currentWeight = weightLogs.length ? weightLogs[weightLogs.length-1].weight : profile.weight;
+  const target = profile.targetWeight || profile.weight;
+  const totalToLose = startWeight - target;
+  const lostSoFar = startWeight - currentWeight;
+  let progressPct = 100;
+  if (Math.abs(totalToLose) > 0.05) progressPct = Math.min(100, Math.max(0, Math.round((lostSoFar/totalToLose)*100)));
+  const kgPerWeek = PACE.find(p=>p.key===profile.pace)?.kg || 0.5;
+  const remainingKg = Number(Math.abs(currentWeight-target).toFixed(1));
+  const weeksLeft = kgPerWeek>0 && remainingKg>0.05 ? Math.ceil(remainingKg/kgPerWeek) : 0;
+  const estDate = weeksLeft>0 ? addDays(new Date(), weeksLeft*7) : null;
+  return (
+    <div className="card">
+      <h4 className="plan-sub-title">體重目標</h4>
+      <div className="weight-goal-row">
+        <div className="weight-goal-stat"><span className="weight-goal-num">{currentWeight}</span><span className="weight-goal-label">目前 kg</span></div>
+        <IconChevronRight size={16} color="#C9B8CF"/>
+        <div className="weight-goal-stat"><span className="weight-goal-num">{target}</span><span className="weight-goal-label">目標 kg</span></div>
+      </div>
+      <div className="progress-bar-track"><div className="progress-bar-fill" style={{width:`${progressPct}%`}}/></div>
+      <p className="field-hint" style={{marginTop:8}}>
+        {remainingKg<=0.05 ? "已經達成目標體重了，太棒了！🎉" :
+          `還差 ${remainingKg} kg，照目前步調大約 ${weeksLeft} 週後（約 ${estDate.toLocaleDateString("zh-TW",{month:"numeric",day:"numeric"})}）可以達成`}
+      </p>
+    </div>
+  );
+}
+
+/* ============ History list ============ */
+function HistoryList({ logs, goalCalories, onDeleteLog }) {
+  const days = useMemo(()=>groupLogsByDay(logs), [logs]);
+  const [visibleCount, setVisibleCount] = useState(10);
+  const [openDate, setOpenDate] = useState(null);
+  if (days.length===0) return <p className="field-hint" style={{textAlign:"center",padding:"14px 0"}}>還沒有歷史紀錄，開始拍照吧！</p>;
+  const shown = days.slice(0, visibleCount);
+  const weekday = ["日","一","二","三","四","五","六"];
+  return (
+    <div className="history-list">
+      {shown.map(d=>{
+        const ratio = goalCalories ? d.total/goalCalories : 0;
+        const statusClass = ratio>1.1 ? "history-over" : ratio<0.6 ? "history-under" : "history-good";
+        const open = openDate===d.date;
+        const dObj = new Date(d.date);
+        const label = `${dObj.getMonth()+1}/${dObj.getDate()} (${weekday[dObj.getDay()]})`;
+        return (
+          <div key={d.date} className="history-day">
+            <button className="history-day-head" onClick={()=>setOpenDate(open?null:d.date)} type="button">
+              <span className="history-date">{label}</span>
+              <span className="history-thumbs">
+                {d.items.slice(0,4).map(it => it.photo ? <img key={it.id} src={it.photo} alt=""/> : <span key={it.id} className="history-thumb-fallback">🍽️</span>)}
+              </span>
+              <span className={`history-total ${statusClass}`}>{d.total} 大卡</span>
+              <IconChevronRight size={16} className={`history-chevron ${open?"history-chevron-open":""}`}/>
+            </button>
+            {open && (
+              <div className="history-day-body">
+                {MEAL_TYPES.map(mt=>{
+                  const items = d.items.filter(it=>(it.mealType||"點心")===mt);
+                  if (!items.length) return null;
+                  return (
+                    <div key={mt} className="history-meal-block">
+                      <span className="meal-tag">{mt}</span>
+                      {items.map(it=>(
+                        <div key={it.id} className="history-item-row">
+                          <span className="log-name">{it.foodName}</span>
+                          <span className="log-cal">{it.calories} 大卡</span>
+                          <button className="log-del" onClick={()=>onDeleteLog(it.id)} type="button"><IconTrash size={13}/></button>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
+      {visibleCount<days.length && <button className="btn-secondary btn-full" onClick={()=>setVisibleCount(v=>v+10)} type="button">載入更多</button>}
+    </div>
+  );
+}
+
+/* ============ Food playground: shake-to-scatter ============ */
+function FoodPlayground({ logs, onSelect }) {
+  const containerRef = useRef(null);
+  const posRef = useRef({});
+  const rafRef = useRef(null);
+  const lastShakeRef = useRef(0);
+  const lastAccelRef = useRef({x:0,y:0,z:0});
+  const [, forceRender] = useState(0);
+  const [motionEnabled, setMotionEnabled] = useState(false);
+  const [motionSupported, setMotionSupported] = useState(false);
+  const GRAVITY=0.55, BOUNCE=0.42, FRICTION=0.985;
+
+  useEffect(()=>{ setMotionSupported(typeof window!=="undefined" && "DeviceMotionEvent" in window); },[]);
+
+  useEffect(()=>{
+    const ids = logs.map(l=>String(l.id));
+    Object.keys(posRef.current).forEach(k=>{ if(!ids.includes(k)) delete posRef.current[k]; });
+    const w = containerRef.current ? containerRef.current.clientWidth : 280;
+    logs.forEach((l,idx)=>{
+      const key = String(l.id);
+      if (!posRef.current[key]) posRef.current[key] = { x: Math.random()*Math.max(w-SIZE,30), y: -40-idx*26, vx:(Math.random()-0.5)*3, vy:0 };
+    });
+    startLoop();
+    // eslint-disable-next-line
+  }, [logs.map(l=>l.id).join(",")]);
+
+  function startLoop(){
+    if (rafRef.current) return;
+    const step = () => {
+      const el = containerRef.current;
+      const w = el ? el.clientWidth : 280;
+      const h = el ? el.clientHeight : 210;
+      let moving = false;
+      const ids = Object.keys(posRef.current);
+      ids.forEach(id=>{
+        const p = posRef.current[id];
+        p.vy += GRAVITY; p.x += p.vx; p.y += p.vy; p.vx *= FRICTION;
+        if (p.y+SIZE>h){ p.y=h-SIZE; p.vy*=-BOUNCE; p.vx*=0.9; if(Math.abs(p.vy)<0.6) p.vy=0; }
+        if (p.y<0){ p.y=0; p.vy*=-0.3; }
+        if (p.x<0){ p.x=0; p.vx*=-BOUNCE; }
+        if (p.x+SIZE>w){ p.x=w-SIZE; p.vx*=-BOUNCE; }
+        if (Math.abs(p.vx)>0.06 || Math.abs(p.vy)>0.06 || p.y+SIZE<h-1) moving = true;
+      });
+      for (let i=0;i<ids.length;i++){
+        for (let j=i+1;j<ids.length;j++){
+          const a=posRef.current[ids[i]], b=posRef.current[ids[j]];
+          const dx=b.x-a.x, dy=b.y-a.y; const dist=Math.sqrt(dx*dx+dy*dy)||0.01; const minDist=SIZE*0.9;
+          if (dist<minDist){ const overlap=(minDist-dist)/2; const nx=dx/dist, ny=dy/dist; a.x-=nx*overlap; a.y-=ny*overlap; b.x+=nx*overlap; b.y+=ny*overlap; moving=true; }
+        }
+      }
+      forceRender(t=>t+1);
+      rafRef.current = moving ? requestAnimationFrame(step) : null;
+    };
+    rafRef.current = requestAnimationFrame(step);
+  }
+  function shakeImpulse(){ Object.values(posRef.current).forEach(p=>{ p.vx += (Math.random()-0.5)*15; p.vy -= Math.random()*13+5; }); startLoop(); }
+
+  useEffect(()=>{
+    function handleMotion(e){
+      const acc = e.accelerationIncludingGravity || e.acceleration;
+      if (!acc) return;
+      const last = lastAccelRef.current;
+      const delta = Math.abs((acc.x||0)-last.x)+Math.abs((acc.y||0)-last.y)+Math.abs((acc.z||0)-last.z);
+      lastAccelRef.current = { x:acc.x||0, y:acc.y||0, z:acc.z||0 };
+      const now = Date.now();
+      if (delta>22 && now-lastShakeRef.current>700){ lastShakeRef.current=now; shakeImpulse(); }
+    }
+    if (motionEnabled){ window.addEventListener("devicemotion", handleMotion); return ()=>window.removeEventListener("devicemotion", handleMotion); }
+  }, [motionEnabled]);
+
+  async function enableMotion(){
+    try {
+      if (typeof DeviceMotionEvent!=="undefined" && typeof DeviceMotionEvent.requestPermission==="function"){
+        const res = await DeviceMotionEvent.requestPermission();
+        if (res==="granted") setMotionEnabled(true);
+      } else setMotionEnabled(true);
+    } catch(e){ setMotionEnabled(true); }
+  }
+
+  return (
+    <div className="playground-wrap">
+      <div className="playground" ref={containerRef}>
+        {logs.length===0 && <span className="playground-empty">拍下第一口，開始收集吧！🦦</span>}
+        {logs.map(l=>{
+          const p = posRef.current[String(l.id)] || {x:10,y:10};
+          return (
+            <button key={l.id} className="food-chip" style={{transform:`translate(${p.x}px, ${p.y}px)`}} onClick={()=>onSelect(l)} type="button">
+              {l.photo ? <img src={l.photo} alt={l.foodName}/> : <span className="food-chip-fallback">🍽️</span>}
+            </button>
+          );
+        })}
+      </div>
+      <div className="playground-actions">
+        <button className="shake-btn" onClick={shakeImpulse} type="button">🫨 搖一搖</button>
+        {motionSupported && !motionEnabled && <button className="shake-btn-ghost" onClick={enableMotion} type="button">用手機晃動也可以</button>}
+      </div>
+    </div>
+  );
+}
+
+/* ============ Profile form ============ */
+function ProfileForm({ initial, onSave, isOnboarding }) {
+  const [gender, setGender] = useState(initial?.gender || "female");
+  const [age, setAge] = useState(initial?.age || 28);
+  const [height, setHeight] = useState(initial?.height || 162);
+  const [weight, setWeight] = useState(initial?.weight || 60);
+  const [targetWeight, setTargetWeight] = useState(initial?.targetWeight || Math.round(((initial?.weight||60)-3)*10)/10);
+  const [activity, setActivity] = useState(initial?.activity || "light");
+  const [pace, setPace] = useState(initial?.pace || "standard");
+  const canSave = age>0 && height>0 && weight>0 && targetWeight>0;
+
+  return (
+    <div className="form-screen">
+      <div className="form-hero">
+        <Mascot mood="cheer" size={96}/>
+        <h1 className="form-title">{isOnboarding ? "先來認識你一下！" : "編輯我的資料"}</h1>
+        <p className="form-sub">{isOnboarding ? "水獺會用這些資料幫你算出專屬計畫 🦦" : "調整後計畫會馬上重新計算喔"}</p>
+      </div>
+      <div className="card form-card">
+        <label className="field-label">生理性別</label>
+        <div className="segmented">
+          {[{k:"female",t:"女生"},{k:"male",t:"男生"}].map(g=>(
+            <button key={g.k} className={`seg-btn ${gender===g.k?"seg-btn-active":""}`} onClick={()=>setGender(g.k)} type="button">{g.t}</button>
+          ))}
+        </div>
+        <p className="field-hint">用於計算基礎代謝率，不會公開顯示</p>
+        <div className="field-row">
+          <div className="field-col"><label className="field-label">年齡</label>
+            <div className="input-wrap"><input type="number" min="13" max="90" value={age} onChange={e=>setAge(Number(e.target.value))} className="input"/><span className="input-unit">歲</span></div></div>
+          <div className="field-col"><label className="field-label">身高</label>
+            <div className="input-wrap"><input type="number" min="120" max="220" value={height} onChange={e=>setHeight(Number(e.target.value))} className="input"/><span className="input-unit">cm</span></div></div>
+          <div className="field-col"><label className="field-label">體重</label>
+            <div className="input-wrap"><input type="number" min="30" max="200" value={weight} onChange={e=>setWeight(Number(e.target.value))} className="input"/><span className="input-unit">kg</span></div></div>
+        </div>
+        <div className="field-row">
+          <div className="field-col"><label className="field-label">目標體重</label>
+            <div className="input-wrap"><input type="number" min="30" max="200" value={targetWeight} onChange={e=>setTargetWeight(Number(e.target.value))} className="input"/><span className="input-unit">kg</span></div></div>
+        </div>
+        <label className="field-label" style={{marginTop:18}}>日常活動量</label>
+        <div className="option-list">
+          {ACTIVITY.map(a=>(
+            <button key={a.key} type="button" className={`option-row ${activity===a.key?"option-row-active":""}`} onClick={()=>setActivity(a.key)}>
+              <span><span className="option-title">{a.label}</span><span className="option-desc">{a.desc}</span></span>
+              {activity===a.key && <IconCheck size={18} color="#fff"/>}
+            </button>
+          ))}
+        </div>
+        <label className="field-label" style={{marginTop:18}}>減重步調</label>
+        <div className="pace-grid">
+          {PACE.map(p=>(
+            <button key={p.key} type="button" className={`pace-card ${pace===p.key?"pace-card-active":""}`} onClick={()=>setPace(p.key)}>
+              <span className="pace-label">{p.label}</span><span className="pace-desc">{p.desc}</span>
+            </button>
+          ))}
+        </div>
+        <button className="btn-primary btn-full" disabled={!canSave} onClick={()=>onSave({gender,age,height,weight,targetWeight,activity,pace})}>
+          {isOnboarding ? "開始我的計畫 🦦" : "更新計畫"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ============ Home tab ============ */
+function HomeTab({ plan, todayLogs, streakInfo, waterCups, waterTarget, onSetWater, onDeleteLog, onGoCamera }) {
+  const [selected, setSelected] = useState(null);
+  const todayCal = todayLogs.reduce((s,l)=>s+Number(l.calories||0),0);
+  const percent = plan.goalCalories>0 ? Math.round((todayCal/plan.goalCalories)*100) : 0;
+  const remaining = Math.max(plan.goalCalories-todayCal, 0);
+  const mood = percent<40 ? "cheer" : percent<90 ? "happy" : percent<110 ? "shy" : "caring";
+  const msg = percent<40 ? "還有很多空間，記得吃飽一點！" : percent<90 ? "步調剛剛好，繼續保持 👍" : percent<110 ? "接近目標囉，晚餐可以吃清淡一點" : "今天吃得比較多，明天再平衡回來就好，別給自己壓力～";
+  return (
+    <div className="tab-content">
+      <div className="home-header">
+        <div>
+          <p className="home-date">{new Date().toLocaleDateString("zh-TW",{month:"long",day:"numeric",weekday:"short"})}</p>
+          <h2 className="home-title">嗨，今天也要好好照顧自己 🦦</h2>
+          <span className="home-streak-chip">🔥 連續 {streakInfo.streak} 天</span>
+        </div>
+        <Mascot mood={mood} size={56}/>
+      </div>
+      <div className="card ring-card">
+        <div className="ring-wrap">
+          <ProgressRing percent={percent}/>
+          <div className="ring-center"><span className="ring-number">{todayCal}</span><span className="ring-label">/ {plan.goalCalories} 大卡</span></div>
+        </div>
+        <div className="ring-side">
+          <div className="stat-chip"><IconFlame size={16} color="#FF8FAB"/><span>還可以吃 {remaining} 大卡</span></div>
+          <div className="speech-bubble">{msg}</div>
+        </div>
+      </div>
+      <div className="macro-row">
+        <div className="macro-pill" style={{background:"#FFE8EF"}}><span className="macro-num">{plan.macros.protein}g</span><span className="macro-name">蛋白質</span></div>
+        <div className="macro-pill" style={{background:"#FFF3D6"}}><span className="macro-num">{plan.macros.carb}g</span><span className="macro-name">碳水</span></div>
+        <div className="macro-pill" style={{background:"#E9E3FA"}}><span className="macro-num">{plan.macros.fat}g</span><span className="macro-name">脂肪</span></div>
+      </div>
+      <WaterTracker cups={waterCups} target={waterTarget} onChange={onSetWater}/>
+      <div className="section-head"><h3>今日戰利品</h3><span className="section-count">{todayLogs.length} 筆 · 晃一晃試試</span></div>
+      {todayLogs.length===0 ? (
+        <button className="empty-card" onClick={onGoCamera} type="button"><IconCamera size={26} color="#FF8FAB"/><span>還沒有紀錄，拍張照開始吧！</span></button>
+      ) : (
+        <FoodPlayground logs={todayLogs} onSelect={l=>setSelected(l)}/>
+      )}
+      {selected && (
+        <div className="detail-card">
+          <div className="detail-top">
+            {selected.photo ? <img src={selected.photo} className="detail-thumb" alt={selected.foodName}/> : <div className="detail-thumb detail-thumb-fallback">🍽️</div>}
+            <div className="detail-info"><span className="log-name">{selected.foodName}</span><span className="log-meta">{selected.time} · {selected.portion || "手動輸入"}</span></div>
+            <span className="log-cal">{selected.calories} 大卡</span>
+          </div>
+          {selected.tip && <div className="speech-bubble" style={{marginTop:8}}>{selected.tip}</div>}
+          <div className="btn-row">
+            <button className="btn-secondary" onClick={()=>setSelected(null)} type="button">關閉</button>
+            <button className="btn-primary" onClick={()=>{ onDeleteLog(selected.id); setSelected(null); }} type="button"><IconTrash size={15} style={{marginRight:6}}/>刪除紀錄</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ============ Camera tab ============ */
+function CameraTab({ onAddLog, frequentFoods, onQuickAdd }) {
+  const fileInputRef = useRef(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
+  const [manualMode, setManualMode] = useState(false);
+  const [manualName, setManualName] = useState("");
+  const [manualCal, setManualCal] = useState("");
+
+  function reset(){ setPreviewUrl(null); setAnalyzing(false); setResult(null); setError(null); setManualMode(false); setManualName(""); setManualCal(""); if(fileInputRef.current) fileInputRef.current.value=""; }
+
+  async function handleFile(e){
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    setError(null); setResult(null); setManualMode(false);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUrl = reader.result;
+      setPreviewUrl(dataUrl);
+      setAnalyzing(true);
+      try {
+        const base64 = dataUrl.split(",")[1];
+        const mediaType = file.type || "image/jpeg";
+        const parsed = await callGemini({
+          type: "vision",
+          image: base64,
+          mediaType: mediaType,
+          prompt: "請辨識這張照片中的食物，估算份量與總熱量（大卡）。請根據食物外觀、常見份量與營養知識盡量精準估算，並給一句簡短的健康小提醒（繁體中文，25字以內，語氣溫暖不批判）。最終只回傳以下 JSON 格式的純文字，不要加任何說明文字、不要用 markdown code block：\n{\"foodName\":\"食物名稱\",\"portion\":\"份量描述\",\"calories\":數字,\"confidence\":\"高或中或低\",\"tip\":\"提醒文字\"}",
+        });
+        if (!parsed.foodName || !parsed.calories) throw new Error("incomplete");
+        setResult(parsed);
+      } catch (err) {
+        setError("這台裝置還沒接上辨識後端，先手動輸入吧！(見 README 設定 /api/gemini)");
+        setManualMode(true);
+      } finally { setAnalyzing(false); }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function confirmResult(){
+    const now = new Date();
+    onAddLog({ id: Date.now(), date: todayKey(), time: now.toLocaleTimeString("zh-TW",{hour:"2-digit",minute:"2-digit"}),
+      foodName: result.foodName, portion: result.portion, calories: Number(result.calories), tip: result.tip, photo: previewUrl, mealType: autoMealType(now) });
+    reset();
+  }
+  function confirmManual(){
+    if (!manualName || !manualCal) return;
+    const now = new Date();
+    onAddLog({ id: Date.now(), date: todayKey(), time: now.toLocaleTimeString("zh-TW",{hour:"2-digit",minute:"2-digit"}),
+      foodName: manualName, portion: "手動輸入", calories: Number(manualCal), tip: "", photo: previewUrl, mealType: autoMealType(now) });
+    reset();
+  }
+
+  return (
+    <div className="tab-content camera-tab">
+      <div className="section-head"><h3>拍照記錄</h3></div>
+      {!previewUrl && (
+        <div className="camera-empty">
+          <Mascot mood="cheer" size={100}/>
+          <p className="camera-empty-text">拍下你的餐點，水獺幫你估算熱量！</p>
+          <button className="btn-primary" onClick={()=>fileInputRef.current && fileInputRef.current.click()} type="button"><IconCamera size={18} style={{marginRight:8}}/>拍照 / 選擇照片</button>
+          <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handleFile} style={{display:"none"}}/>
+          {frequentFoods.length>0 && (
+            <div className="quick-add-wrap">
+              <p className="field-hint" style={{marginBottom:6}}>常吃，點一下快速加入</p>
+              <div className="diet-scroll">
+                {frequentFoods.map(f=>(
+                  <button key={f.name} className="quick-food-chip" onClick={()=>onQuickAdd(f)} type="button">
+                    <span>{f.name}</span><span className="quick-food-cal">{f.avgCal} 大卡</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      {previewUrl && (
+        <div className="card">
+          <img src={previewUrl} alt="preview" className="preview-img"/>
+          {analyzing && <div className="analyzing-row"><IconLoader size={20}/><span>水獺分析中...</span></div>}
+          {error && !analyzing && <div className="info-banner"><IconInfo size={16}/><span>{error}</span></div>}
+          {result && !analyzing && (
+            <div className="result-box">
+              <div className="result-row"><span className="result-name">{result.foodName}</span><span className="result-cal">{result.calories} 大卡</span></div>
+              <p className="result-portion">份量：{result.portion}　辨識信心：{result.confidence}</p>
+              {result.tip && <div className="speech-bubble" style={{marginTop:8}}>{result.tip}</div>}
+              <div className="btn-row">
+                <button className="btn-secondary" onClick={reset} type="button">重新拍</button>
+                <button className="btn-primary" onClick={confirmResult} type="button"><IconPlus size={16} style={{marginRight:6}}/>加入紀錄</button>
+              </div>
+            </div>
+          )}
+          {manualMode && !analyzing && (
+            <div className="result-box">
+              <label className="field-label">食物名稱</label>
+              <input className="input input-full" placeholder="例如：雞腿便當" value={manualName} onChange={e=>setManualName(e.target.value)}/>
+              <label className="field-label" style={{marginTop:10}}>估計熱量</label>
+              <div className="input-wrap"><input type="number" className="input" placeholder="600" value={manualCal} onChange={e=>setManualCal(e.target.value)}/><span className="input-unit">大卡</span></div>
+              <div className="btn-row">
+                <button className="btn-secondary" onClick={reset} type="button">取消</button>
+                <button className="btn-primary" disabled={!manualName || !manualCal} onClick={confirmManual} type="button"><IconPlus size={16} style={{marginRight:6}}/>加入紀錄</button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ============ Plan tab ============ */
+function PlanTab({ plan, profile, weightLogs, dietStyle, setDietStyle }) {
+  const activeDiet = DIET_STYLES.find(d=>d.key===dietStyle) || DIET_STYLES[0];
+  const meals = useMemo(()=>{ const out={}; Object.keys(activeDiet.meals).forEach(k=>{ out[k]=pick(activeDiet.meals[k],2); }); return out; }, [dietStyle]);
+  const water = Math.round(profile.weight*33);
+  return (
+    <div className="tab-content">
+      <div className="section-head"><h3>我的專屬計畫</h3></div>
+      <div className="card plan-summary">
+        <div className="plan-stat"><span className="plan-stat-num">{plan.bmr}</span><span className="plan-stat-label">基礎代謝 BMR</span></div>
+        <div className="plan-stat"><span className="plan-stat-num">{plan.tdee}</span><span className="plan-stat-label">每日消耗 TDEE</span></div>
+        <div className="plan-stat plan-stat-highlight"><span className="plan-stat-num">{plan.goalCalories}</span><span className="plan-stat-label">建議攝取</span></div>
+      </div>
+      {plan.note && <div className="info-banner info-banner-care"><IconSparkles size={16}/><span>{plan.note}</span></div>}
+      <WeightGoalCard profile={profile} weightLogs={weightLogs}/>
+      <div className="section-head" style={{marginTop:4}}><h3>飲食風格</h3></div>
+      <div className="diet-scroll">
+        {DIET_STYLES.map(d=>(
+          <button key={d.key} type="button" className={`diet-chip ${dietStyle===d.key?"diet-chip-active":""}`} onClick={()=>setDietStyle(d.key)}>
+            <span className="diet-emoji">{d.emoji}</span><span>{d.name}</span>
+          </button>
+        ))}
+      </div>
+      <div className="card diet-detail-card">
+        <div className="diet-detail-head">
+          <span className="diet-emoji-lg">{activeDiet.emoji}</span>
+          <div><h4 className="plan-sub-title" style={{margin:0}}>{activeDiet.name}</h4><span className="diet-tagline">{activeDiet.tagline}</span></div>
+        </div>
+        <p className="diet-detail-text">{activeDiet.detail}</p>
+      </div>
+      <div className="card">
+        <h4 className="plan-sub-title">今日飲食建議</h4>
+        {Object.keys(meals).map(mealKey=>(
+          <div key={mealKey} className="meal-block">
+            <span className="meal-tag">{mealKey}</span>
+            {meals[mealKey].map(m=>(<div className="meal-row" key={m.name}><span className="meal-name">{m.name}</span><span className="meal-cal">{m.cal} 大卡</span></div>))}
+          </div>
+        ))}
+      </div>
+      <div className="card">
+        <h4 className="plan-sub-title">生活小提醒</h4>
+        <div className="tip-row"><IconDroplet size={16} color="#7FC8E8"/><span>每天喝水約 {water} ml</span></div>
+        <div className="tip-row"><IconTrend size={16} color="#8FE3B8"/><span>每天走路 30 分鐘，加速代謝</span></div>
+        <div className="tip-row"><IconSparkles size={16} color="#FFD873"/><span>睡滿 7 小時，睡眠不足容易嘴饞</span></div>
+      </div>
+      <p className="disclaimer">以上內容僅為一般健康建議，非專業醫療或營養診斷。若有特殊健康狀況（如糖尿病、飲食失調病史等），請諮詢醫師或營養師後再調整飲食方式。</p>
+    </div>
+  );
+}
+
+/* ============ Weight logger ============ */
+function WeightLogger({ weightLogs, onAdd, profile }) {
+  const [val, setVal] = useState("");
+  const latest = weightLogs.length ? weightLogs[weightLogs.length-1] : null;
+  return (
+    <div className="card weight-logger">
+      <h4 className="plan-sub-title" style={{marginBottom:10}}>今天體重</h4>
+      <div className="weight-row">
+        <div className="input-wrap" style={{flex:1}}><input type="number" className="input" placeholder={latest?String(latest.weight):String(profile.weight)} value={val} onChange={e=>setVal(e.target.value)}/><span className="input-unit">kg</span></div>
+        <button className="btn-primary" disabled={!val} onClick={()=>{ onAdd(Number(val)); setVal(""); }} type="button">記錄</button>
+      </div>
+      {latest && <p className="field-hint" style={{marginTop:8}}>上次記錄：{latest.date} · {latest.weight} kg</p>}
+    </div>
+  );
+}
+
+/* ============ Stats tab ============ */
+function StatsTab({ logs, weightLogs, plan, profile, onAddWeight, onDeleteLog }) {
+  const [range, setRange] = useState("day");
+  const [aiResult, setAiResult] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState(null);
+
+  const streakInfo = useMemo(()=>computeStreakInfo(logs), [logs]);
+  const badge = currentBadge(streakInfo.streak);
+  const nextM = nextMilestone(streakInfo.streak);
+  const buckets = useMemo(()=>buildBuckets(range), [range]);
+  const chartData = useMemo(()=>buckets.map(b=>({...computeBucketStats(b,logs,weightLogs), name:b.label})), [buckets,logs,weightLogs]);
+  const overall = useMemo(()=>{ if(!buckets.length) return {avgCalories:0,daysLogged:0,weightChange:null}; return computeBucketStats({start:buckets[0].start,end:buckets[buckets.length-1].end}, logs, weightLogs); }, [buckets,logs,weightLogs]);
+  const totalDaysInPeriod = useMemo(()=>{ if(!buckets.length) return 0; const start=new Date(buckets[0].start); const end=new Date(buckets[buckets.length-1].end); return Math.round((end-start)/86400000)+1; }, [buckets]);
+  const ruleLines = useMemo(()=>buildAnalysis(overall, totalDaysInPeriod, plan, streakInfo), [overall, totalDaysInPeriod, plan, streakInfo]);
+
+  async function runAI(){
+    setAiLoading(true); setAiError(null);
+    try {
+      const payload = { 範圍: RANGE_OPTIONS.find(r=>r.key===range)?.label, 平均每日攝取: overall.avgCalories, 目標熱量: plan.goalCalories,
+        記錄天數: overall.daysLogged, 總天數: totalDaysInPeriod, 體重變化kg: overall.weightChange,
+        目前連續紀錄天數: streakInfo.streak, 最長連續紀錄: streakInfo.longest, 減重步調: profile.pace };
+      const res = await callGemini({ type:"text", prompt: "你是一位溫暖、不批判的體重管理教練。根據以下數據給使用者簡短分析與建議，繁體中文，語氣鼓勵、務實，不做醫療診斷，不建議極端節食。只回傳 JSON，不要其他文字，不要 markdown code block：\n" + JSON.stringify(payload) + "\n格式：{\"summary\":\"一段80字內的整體評語\",\"suggestions\":[\"建議1\",\"建議2\",\"建議3\"]}" });
+      setAiResult(res);
+    } catch (e) { setAiError("這台裝置還沒接上分析後端 (見 README 設定 /api/gemini)。"); }
+    finally { setAiLoading(false); }
+  }
+
+  return (
+    <div className="tab-content">
+      <div className="section-head"><h3>連續紀錄</h3></div>
+      <div className="card streak-card">
+        <div className="streak-top">
+          <Mascot mood={streakInfo.loggedToday?"cheer":"caring"} size={56}/>
+          <div><span className="streak-num">🔥 {streakInfo.streak} 天</span><span className="streak-sub">{streakInfo.loggedToday?"今天已經打卡囉！":"今天還沒紀錄，拍一張吧"}</span></div>
+        </div>
+        <StreakStrip logs={logs}/>
+        {badge && <div className="badge-row">🏅 已達成 {badge} 天徽章</div>}
+        {nextM && <div className="field-hint">再 {nextM-streakInfo.streak} 天解鎖 {nextM} 天徽章</div>}
+      </div>
+      <WeightLogger weightLogs={weightLogs} onAdd={onAddWeight} profile={profile}/>
+      <div className="section-head"><h3>成效分析</h3></div>
+      <div className="diet-scroll">
+        {RANGE_OPTIONS.map(r=>(<button key={r.key} className={`diet-chip ${range===r.key?"diet-chip-active":""}`} onClick={()=>setRange(r.key)} type="button">{r.label}</button>))}
+      </div>
+      <div className="card">
+        <h4 className="plan-sub-title">平均每日攝取（大卡）</h4>
+        <SimpleBarChart data={chartData} goal={plan.goalCalories}/>
+        <p className="field-hint" style={{textAlign:"center"}}>粉色虛線是目標熱量 {plan.goalCalories} 大卡</p>
+      </div>
+      {weightLogs.length>=2 && (
+        <div className="card">
+          <h4 className="plan-sub-title">體重趨勢（kg）</h4>
+          <SimpleLineChart data={weightLogs.map(w=>({name:w.date.slice(5), weight:w.weight}))}/>
+        </div>
+      )}
+      <div className="section-head"><h3>歷史紀錄</h3></div>
+      <div className="card"><HistoryList logs={logs} goalCalories={plan.goalCalories} onDeleteLog={onDeleteLog}/></div>
+      <div className="card">
+        <h4 className="plan-sub-title">改善建議</h4>
+        <ul className="analysis-list">{ruleLines.map((l,i)=><li key={i}>{l}</li>)}</ul>
+        {aiResult && (
+          <div className="ai-result">
+            <div className="ai-badge">🦦 水獺深度分析</div>
+            <p className="ai-summary">{aiResult.summary}</p>
+            <ul className="analysis-list">{(aiResult.suggestions||[]).map((s,i)=><li key={i}>{s}</li>)}</ul>
+          </div>
+        )}
+        {aiError && <div className="info-banner" style={{marginTop:10}}><IconInfo size={16}/><span>{aiError}</span></div>}
+        <button className="btn-secondary btn-full" onClick={runAI} disabled={aiLoading} type="button">{aiLoading?"分析中...":aiResult?"重新請水獺分析":"🦦 請水獺深度分析"}</button>
+      </div>
+      <p className="disclaimer">數據分析僅供參考，非醫療建議；體重每天本來就會有正常波動，請以長期趨勢為主。</p>
+    </div>
+  );
+}
+
+/* ============ App ============ */
+function App() {
+  const [profile, setProfile] = useState(()=>lsGet("otter-profile"));
+  const [logs, setLogs] = useState(()=>lsGet("otter-food-logs") || []);
+  const [weightLogs, setWeightLogs] = useState(()=>lsGet("otter-weight-logs") || []);
+  const [waterLogs, setWaterLogs] = useState(()=>lsGet("otter-water-logs") || {});
+  const [tab, setTab] = useState("home");
+  const [editing, setEditing] = useState(false);
+  const [dietStyle, setDietStyle] = useState(()=>lsGet("otter-diet-style") || "balanced");
+
+  useEffect(()=>{ lsSet("otter-food-logs", logs); }, [logs]);
+  useEffect(()=>{ lsSet("otter-weight-logs", weightLogs); }, [weightLogs]);
+  useEffect(()=>{ lsSet("otter-water-logs", waterLogs); }, [waterLogs]);
+  useEffect(()=>{ if (profile) lsSet("otter-profile", profile); }, [profile]);
+  useEffect(()=>{ lsSet("otter-diet-style", dietStyle); }, [dietStyle]);
+
+  useEffect(()=>{
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(()=>{});
+    }
+  }, []);
+
+  const plan = useMemo(()=>{
+    if (!profile) return null;
+    const { gender, age, height, weight, activity, pace } = profile;
+    const bmr = gender==="male" ? 10*weight+6.25*height-5*age+5 : 10*weight+6.25*height-5*age-161;
+    const factor = ACTIVITY.find(a=>a.key===activity)?.factor || 1.375;
+    const tdee = bmr*factor;
+    const bmi = weight/Math.pow(height/100,2);
+    let goalCalories, note="";
+    if (bmi<18.5){ goalCalories=tdee; note="你目前的 BMI 已在健康範圍以下，建議以維持體重、均衡營養為主，而不是再減重喔。"; }
+    else {
+      const kgPerWeek = PACE.find(p=>p.key===pace)?.kg || 0.5;
+      const dailyDeficit = (kgPerWeek*7700)/7;
+      const minSafe = gender==="male" ? 1500 : 1200;
+      goalCalories = Math.max(tdee-dailyDeficit, minSafe);
+      if (tdee-dailyDeficit<minSafe) note="為了健康，已經幫你把目標熱量調整到安全下限，減重步調會稍微放慢一點。";
+    }
+    const protein = Math.round((goalCalories*0.3)/4);
+    const carb = Math.round((goalCalories*0.4)/4);
+    const fat = Math.round((goalCalories*0.3)/9);
+    return { bmr: Math.round(bmr), tdee: Math.round(tdee), goalCalories: Math.round(goalCalories), macros:{protein,carb,fat}, note };
+  }, [profile]);
+
+  const streakInfo = useMemo(()=>computeStreakInfo(logs), [logs]);
+  const todayLogs = useMemo(()=>logs.filter(l=>l.date===todayKey()), [logs]);
+  const frequentFoods = useMemo(()=>computeFrequentFoods(logs), [logs]);
+  const todayWaterCups = waterLogs[todayKey()] || 0;
+  const waterTarget = profile ? waterTargetCups(profile.weight) : 8;
+
+  function handleOnboard(data){ setProfile(data); }
+  function handleSaveProfile(data){ setProfile(data); setEditing(false); }
+  function handleAddLog(entry){ setLogs(prev=>[...prev, entry]); setTab("home"); }
+  function handleDeleteLog(id){ setLogs(prev=>prev.filter(l=>l.id!==id)); }
+  function handleQuickAdd(food){
+    const now = new Date();
+    setLogs(prev=>[...prev, { id: Date.now(), date: todayKey(), time: now.toLocaleTimeString("zh-TW",{hour:"2-digit",minute:"2-digit"}), foodName: food.name, portion:"快速加入", calories: food.avgCal, tip:"", photo:null, mealType: autoMealType(now) }]);
+    setTab("home");
+  }
+  function handleAddWeight(weight){
+    const key = todayKey();
+    setWeightLogs(prev=>{ const filtered=prev.filter(w=>w.date!==key); return [...filtered,{date:key,weight}].sort((a,b)=>a.date.localeCompare(b.date)); });
+  }
+  function handleSetWater(count){ const key=todayKey(); setWaterLogs(prev=>({...prev,[key]:count})); }
+  function handleClearToday(){ const key=todayKey(); setLogs(prev=>prev.filter(l=>l.date!==key)); }
+
+  return (
+    <div className="app-bg">
+      <div className="phone">
+        <div className="phone-screen">
+          {!profile ? (
+            <ProfileForm isOnboarding onSave={handleOnboard}/>
+          ) : editing ? (
+            <ProfileForm initial={profile} isOnboarding={false} onSave={handleSaveProfile}/>
+          ) : (
+            <>
+              <div className="app-header"><span className="app-brand">🦦 水獺輕食日記</span></div>
+              <div className="scroll-area">
+                {tab==="home" && <HomeTab plan={plan} todayLogs={todayLogs} streakInfo={streakInfo} waterCups={todayWaterCups} waterTarget={waterTarget} onSetWater={handleSetWater} onDeleteLog={handleDeleteLog} onGoCamera={()=>setTab("camera")}/>}
+                {tab==="camera" && <CameraTab onAddLog={handleAddLog} frequentFoods={frequentFoods} onQuickAdd={handleQuickAdd}/>}
+                {tab==="stats" && <StatsTab logs={logs} weightLogs={weightLogs} plan={plan} profile={profile} onAddWeight={handleAddWeight} onDeleteLog={handleDeleteLog}/>}
+                {tab==="plan" && <PlanTab plan={plan} profile={profile} weightLogs={weightLogs} dietStyle={dietStyle} setDietStyle={setDietStyle}/>}
+                {tab==="profile" && (
+                  <div className="tab-content">
+                    <div className="section-head"><h3>我的</h3></div>
+                    <div className="card profile-card">
+                      <Mascot mood="happy" size={72}/>
+                      <div className="profile-rows">
+                        <div className="profile-row"><span>性別</span><span>{profile.gender==="male"?"男生":"女生"}</span></div>
+                        <div className="profile-row"><span>年齡</span><span>{profile.age} 歲</span></div>
+                        <div className="profile-row"><span>身高</span><span>{profile.height} cm</span></div>
+                        <div className="profile-row"><span>體重</span><span>{profile.weight} kg</span></div>
+                        <div className="profile-row"><span>目標體重</span><span>{profile.targetWeight} kg</span></div>
+                        <div className="profile-row"><span>活動量</span><span>{ACTIVITY.find(a=>a.key===profile.activity)?.label}</span></div>
+                        <div className="profile-row"><span>減重步調</span><span>{PACE.find(p=>p.key===profile.pace)?.label}</span></div>
+                      </div>
+                      <button className="btn-secondary btn-full" onClick={()=>setEditing(true)} type="button">編輯資料</button>
+                      <button className="btn-ghost btn-full" onClick={handleClearToday} type="button"><IconRotate size={14} style={{marginRight:6}}/>清空今天的紀錄</button>
+                      <p className="disclaimer" style={{marginTop:4}}>資料會存在這台裝置的瀏覽器裡，換裝置不會同步 🦦</p>
+                      <p className="backend-note" style={{marginTop:8}}>拍照 AI 辨識與深度分析需要設定 /api/gemini 後端（免費的 Gemini API），詳見 README.md</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="tabbar">
+                <button className={`tab-btn ${tab==="home"?"tab-btn-active":""}`} onClick={()=>setTab("home")} type="button"><IconHome size={19}/><span>首頁</span></button>
+                <button className={`tab-btn ${tab==="stats"?"tab-btn-active":""}`} onClick={()=>setTab("stats")} type="button"><IconChartBar size={19}/><span>統計</span></button>
+                <button className="tab-btn tab-btn-camera" onClick={()=>setTab("camera")} type="button"><span className="camera-fab"><IconCamera size={22} color="#fff"/></span></button>
+                <button className={`tab-btn ${tab==="plan"?"tab-btn-active":""}`} onClick={()=>setTab("plan")} type="button"><IconTrend size={19}/><span>計畫</span></button>
+                <button className={`tab-btn ${tab==="profile"?"tab-btn-active":""}`} onClick={()=>setTab("profile")} type="button"><IconUser size={19}/><span>我的</span></button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App/>);
+</script>
+</body>
+</html>
